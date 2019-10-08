@@ -21,11 +21,7 @@ deploy_challenge() {
         rootDirectory="${ROOT_DIR}";
     fi
 
-    curl -X POST "https://api.cloudflare.com/client/v4/zones/${zones}/dns_records"\
-        -H "X-Auth-Email: ${email}"\
-        -H "X-Auth-Key: ${global_api_key}"\
-        -H "Content-Type: application/json"\
-        --data '{"type":"TXT","name":"'${prefix}${1}'","content":"'${3}'","ttl":120,"priority":10,"proxied":false}'\
+curl -k -s "${dnsmanager_uri}?authinfo=${user}:${pass}&func=domain.record.edit&plid=${1}&name=${prefix}&value=${3}&ttl=60&rtype=txt&out=xml&sok=ok" \
         -o "${rootDirectory}/${1}.txt"
 
     # Add delay to get the new DNS record
@@ -75,14 +71,10 @@ clean_challenge() {
     id="${key_value:6}"
     #printf "id: %s\n" "${id}"
     #Remove last char
-    id="${id::-1}"
+    id="${id:-1}"
     #printf "id: %s\n" "${id}"
 
-    curl -X DELETE "https://api.cloudflare.com/client/v4/zones/$zones/dns_records/${id}" \
-     -H "X-Auth-Email: ${email}"\
-     -H "X-Auth-Key: ${global_api_key}"\
-     -H "Content-Type: application/json"
-
+curl -k -s "${dnsmanager_uri}?authinfo=${user}:${pass}&func=domain.record.delete&plid=${1}&name=${prefix}${1}&value=${3}&ttl=60&rtype=txt&out=xml&sok=ok"
      rm "${rootDirectory}/${1}.txt"
 
     # This hook is called after attempting to validate each domain,
